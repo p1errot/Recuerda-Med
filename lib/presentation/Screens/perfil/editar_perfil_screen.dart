@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:convert'; // Importa la librería para trabajar con JSON
+import 'dart:convert';
 
 class EditarPerfilScreen extends StatefulWidget {
   const EditarPerfilScreen({super.key});
@@ -9,8 +9,6 @@ class EditarPerfilScreen extends StatefulWidget {
 }
 
 class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
-  // Declara los TextEditingController como miembros del estado
-  // para que persistan y podamos acceder a sus valores.
   final TextEditingController nombreController = TextEditingController(
     text: "nombre x",
   );
@@ -35,7 +33,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
 
   @override
   void dispose() {
-    // Es importante liberar los controladores cuando el widget ya no se usa
     nombreController.dispose();
     edadController.dispose();
     fechaNacimientoController.dispose();
