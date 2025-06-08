@@ -64,7 +64,6 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Aquí recogemos los datos y los formateamos como JSON
                 Map<String, dynamic> datosPerfil = {
                   "nombre": nombreController.text,
                   "edad": edadController.text,
@@ -75,14 +74,9 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
                   "telefono": telefonoController.text,
                 };
 
-                // Convertir el mapa a una cadena JSON
                 String jsonDatosPerfil = jsonEncode(datosPerfil);
-
-                // Imprimir el JSON en la consola (puedes enviarlo a una API, etc.)
                 print("Datos del perfil en JSON:");
                 print(jsonDatosPerfil);
-
-                // Aquí podrías guardar los datos modificados
                 print("Perfil actualizado");
               },
               child: const Text("Guardar cambios"),
