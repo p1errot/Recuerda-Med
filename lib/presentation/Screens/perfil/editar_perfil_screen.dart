@@ -1,0 +1,108 @@
+import 'package:flutter/material.dart';
+import 'dart:convert'; // Importa la librería para trabajar con JSON
+
+class EditarPerfilScreen extends StatefulWidget {
+  const EditarPerfilScreen({super.key});
+
+  @override
+  State<EditarPerfilScreen> createState() => _EditarPerfilScreenState();
+}
+
+class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
+  // Declara los TextEditingController como miembros del estado
+  // para que persistan y podamos acceder a sus valores.
+  final TextEditingController nombreController = TextEditingController(
+    text: "nombre x",
+  );
+  final TextEditingController edadController = TextEditingController(
+    text: "x años",
+  );
+  final TextEditingController fechaNacimientoController = TextEditingController(
+    text: "00/00/0000",
+  );
+  final TextEditingController tipoSangreController = TextEditingController(
+    text: "O+",
+  );
+  final TextEditingController direccionController = TextEditingController(
+    text: "Calle falsa 123",
+  );
+  final TextEditingController correoController = TextEditingController(
+    text: "correo@ejemplo.com",
+  );
+  final TextEditingController telefonoController = TextEditingController(
+    text: "3001234567",
+  );
+
+  @override
+  void dispose() {
+    // Es importante liberar los controladores cuando el widget ya no se usa
+    nombreController.dispose();
+    edadController.dispose();
+    fechaNacimientoController.dispose();
+    tipoSangreController.dispose();
+    direccionController.dispose();
+    correoController.dispose();
+    telefonoController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Editar Perfil"), centerTitle: true),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            _buildCampo("Nombre", nombreController),
+            _buildCampo("Edad", edadController),
+            _buildCampo("Fecha de nacimiento", fechaNacimientoController),
+            _buildCampo("Tipo de sangre", tipoSangreController),
+            _buildCampo("Dirección", direccionController),
+            _buildCampo("Correo", correoController),
+            _buildCampo("Teléfono", telefonoController),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Aquí recogemos los datos y los formateamos como JSON
+                Map<String, dynamic> datosPerfil = {
+                  "nombre": nombreController.text,
+                  "edad": edadController.text,
+                  "fechaNacimiento": fechaNacimientoController.text,
+                  "tipoSangre": tipoSangreController.text,
+                  "direccion": direccionController.text,
+                  "correo": correoController.text,
+                  "telefono": telefonoController.text,
+                };
+
+                // Convertir el mapa a una cadena JSON
+                String jsonDatosPerfil = jsonEncode(datosPerfil);
+
+                // Imprimir el JSON en la consola (puedes enviarlo a una API, etc.)
+                print("Datos del perfil en JSON:");
+                print(jsonDatosPerfil);
+
+                // Aquí podrías guardar los datos modificados
+                print("Perfil actualizado");
+              },
+              child: const Text("Guardar cambios"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCampo(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          border: const OutlineInputBorder(),
+        ),
+      ),
+    );
+  }
+}

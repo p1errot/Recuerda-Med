@@ -6,7 +6,8 @@ class NavigationBarApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: NavigationExample());
+    final colors = Theme.of(context);
+    return MaterialApp(home: const NavigationExample(), theme: colors);
   }
 }
 

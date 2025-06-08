@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recuerdamed/presentation/Screens/perfil/editar_perfil_screen.dart';
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
@@ -12,7 +13,10 @@ class PerfilScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.brush),
             onPressed: () {
-              return print("hola");
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => EditarPerfilScreen()),
+              );
             },
           ),
         ],
@@ -24,25 +28,21 @@ class PerfilScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 const TextoA(text: "Nombre:", width: 0.35),
-                const TextoA(
-                  text: "Andres camilo Rueda campo",
-                  width: 0.5,
-                  aling: 1,
-                ),
+                const TextoA(text: "nombre prueba", width: 0.5, aling: 1),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const <Widget>[
                 TextoA(text: "Edad:", width: 0.35),
-                TextoA(text: "22 años", width: 0.5, aling: 1),
+                TextoA(text: "x años", width: 0.5, aling: 1),
               ],
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const <Widget>[
                 TextoA(text: "Fecha de nacimiento:", width: 0.35),
-                TextoA(text: "14/09/2002", width: 0.5, aling: 1),
+                TextoA(text: "00/00/0000", width: 0.5, aling: 1),
               ],
             ),
             Row(
@@ -56,7 +56,7 @@ class PerfilScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: const <Widget>[
                 TextoA(text: "Dirección:", width: 0.35),
-                TextoA(text: "14/09/2002", width: 0.5, aling: 1),
+                TextoA(text: "calle x #x -x", width: 0.5, aling: 1),
               ],
             ),
             Row(
@@ -70,7 +70,7 @@ class PerfilScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: const <Widget>[
                 TextoA(text: "teléfono", width: 0.35),
-                TextoA(text: "14/09/2002", width: 0.5, aling: 1),
+                TextoA(text: "123456789", width: 0.5, aling: 1),
               ],
             ),
 
