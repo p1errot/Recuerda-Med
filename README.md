@@ -1,4 +1,3 @@
 # recuerdamed
-
-A new Flutter project.
-"# Recuerda-Med"  
+ Dependencias del proyecto
+ flutter pub get
