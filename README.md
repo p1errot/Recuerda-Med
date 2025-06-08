@@ -1,3 +1,3 @@
 # recuerdamed
  Dependencias del proyecto
- flutter pub get
+ - flutter pub get
