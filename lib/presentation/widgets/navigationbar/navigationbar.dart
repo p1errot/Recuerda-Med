@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recuerdamed/presentation/Screens/inicio/inicio_screen.dart';
 import 'package:recuerdamed/presentation/Screens/perfil/perfil_screen.dart';
 
 class NavigationBarApp extends StatelessWidget {
@@ -21,7 +22,7 @@ class _NavigationExampleState extends State<NavigationExample> {
   int currentPageIndex = 0;
 
   final List<Widget> _pages = <Widget>[
-    const Center(child: Text('inicio')),
+    InicioScreen(),
     const Center(child: Text('Contenido de Mensajes')),
     PerfilScreen(),
   ];
@@ -29,18 +30,18 @@ class _NavigationExampleState extends State<NavigationExample> {
   final List<NavigationDestination> _destinations =
       const <NavigationDestination>[
         NavigationDestination(
-          selectedIcon: Icon(Icons.home),
+          selectedIcon: Icon(Icons.home, color: Colors.white),
           icon: Icon(Icons.home_outlined),
-          label: 'inicio',
+          label: 'Inicio',
         ),
 
         NavigationDestination(
-          selectedIcon: Icon(Icons.calendar_month),
+          selectedIcon: Icon(Icons.calendar_month, color: Colors.white),
           icon: Icon(Icons.calendar_month_outlined),
-          label: 'Notifications',
+          label: 'Notificaciones',
         ),
         NavigationDestination(
-          selectedIcon: Icon(Icons.person),
+          selectedIcon: Icon(Icons.person, color: Colors.white),
           icon: Icon(Icons.person_outline),
           label: 'Perfil',
         ),
