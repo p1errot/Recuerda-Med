@@ -1,30 +1,45 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+
+import 'package:recuerdamed/presentation/Screens/crearMedicamento/medicamento_screen.dart';
 
 class InicioScreen extends StatefulWidget {
-  const InicioScreen({super.key});
+  final List<Medicamento> medicamentos;
+  final Function(Medicamento) onMedicamentoAdded;
+  final Function(String) onSearchChanged;
+
+  const InicioScreen({
+    super.key,
+    required this.medicamentos,
+    required this.onMedicamentoAdded,
+    required this.onSearchChanged,
+  });
 
   @override
   State<InicioScreen> createState() => _InicioScreenState();
 }
 
 class _InicioScreenState extends State<InicioScreen> {
-  final List<String> _medicamentos = List.generate(
-    20,
-    (index) => 'Medicamento ${index + 1}',
-  );
-
-  List<String> _medicamentosFiltro = [];
-
+  List<Medicamento> _medicamentosFiltro = [];
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _medicamentosFiltro = List.from(_medicamentos);
-
+    _filterMedicamentos();
     _searchController.addListener(() {
-      setState(() {});
+      _filterMedicamentos();
+      widget.onSearchChanged(_searchController.text);
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant InicioScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.medicamentos != oldWidget.medicamentos ||
+        widget.medicamentos.length != oldWidget.medicamentos.length) {
+      _filterMedicamentos();
+    }
   }
 
   @override
@@ -33,30 +48,79 @@ class _InicioScreenState extends State<InicioScreen> {
     super.dispose();
   }
 
+  void _mostrarSnackBar(String mensaje, {bool exito = true}) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor: exito ? Colors.green : Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _addMedicamento() async {
+    final medicamentoMap = await obtenerDatosMedicamento(context);
+
+    if (medicamentoMap != null) {
+      final newNombre = medicamentoMap["nombre"] as String;
+      final newCantidad = medicamentoMap["cantidad"] as int;
+      final newCadaCuantoHoras = medicamentoMap["cada_cuanto_horas"] as int;
+      final newHoraInicio = medicamentoMap["hora_inicio"] as TimeOfDay;
+      final newFechaInicio = DateTime.parse(
+        medicamentoMap["fecha_inicio"] as String,
+      );
+
+      final nuevoMedicamento = Medicamento(
+        nombre: newNombre,
+        cantidad: newCantidad,
+        cadaCuantoHoras: newCadaCuantoHoras,
+        horaInicio: newHoraInicio,
+        fechaInicio: newFechaInicio,
+      );
+
+      widget.onMedicamentoAdded(nuevoMedicamento);
+
+      _mostrarSnackBar(
+        'Medicamento "${nuevoMedicamento.nombre}" añadido correctamente.',
+      );
+      print(
+        'Medicamento añadido (JSON): ${jsonEncode(nuevoMedicamento.toJson())}',
+      );
+    } else {
+      _mostrarSnackBar(
+        'Registro de medicamento cancelado o incompleto.',
+        exito: false,
+      );
+    }
+  }
+
+  void _filterMedicamentos() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _medicamentosFiltro = List.from(widget.medicamentos);
+      } else {
+        _medicamentosFiltro = widget.medicamentos
+            .where(
+              (medicamento) => medicamento.nombre.toLowerCase().contains(query),
+            )
+            .toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('RecuerdaMed'),
-        centerTitle: true,
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              return print("Añadir Medicamento");
-            },
-          ),
+    return Column(
+      children: [
+        if (widget.medicamentos.isNotEmpty ||
+            _searchController.text.isNotEmpty) ...[
+          _buildSearchBar(),
+          const Divider(thickness: 1),
         ],
-      ),
-      body: Column(
-        children: [
-          if (_medicamentos.isNotEmpty) ...[
-            _buildSearchBar(),
-            const Divider(thickness: 1),
-          ],
-          Expanded(child: _buildListView()),
-        ],
-      ),
+        Expanded(child: _buildListView()),
+      ],
     );
   }
 
@@ -74,46 +138,43 @@ class _InicioScreenState extends State<InicioScreen> {
                   icon: const Icon(Icons.clear),
                   onPressed: () {
                     _searchController.clear();
-                    setState(() {
-                      _medicamentosFiltro = List.from(_medicamentos);
-                    });
                     FocusScope.of(context).unfocus();
                   },
                 )
               : null,
         ),
         onChanged: (value) {
-          setState(() {
-            if (value.isEmpty) {
-              _medicamentosFiltro = List.from(_medicamentos);
-            } else {
-              _medicamentosFiltro = _medicamentos
-                  .where(
-                    (item) => item.toLowerCase().contains(value.toLowerCase()),
-                  )
-                  .toList();
-            }
-          });
+          widget.onSearchChanged(value);
         },
       ),
     );
   }
 
   Widget _buildListView() {
-    if (_medicamentosFiltro.isEmpty) {
+    if (widget.medicamentos.isEmpty && _searchController.text.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('No hay medicamentos registrados actualmente.'),
+            const Text(
+              'No hay medicamentos registrados actualmente.',
+              style: TextStyle(fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {
-                return print("Añadir Medicamento");
-              },
+              onPressed: _addMedicamento,
               child: const Text('Agregar Medicamento'),
             ),
           ],
+        ),
+      );
+    } else if (_medicamentosFiltro.isEmpty &&
+        _searchController.text.isNotEmpty) {
+      return const Center(
+        child: Text(
+          'No se encontraron medicamentos para tu búsqueda.',
+          style: TextStyle(fontSize: 16),
         ),
       );
     }
@@ -122,16 +183,31 @@ class _InicioScreenState extends State<InicioScreen> {
       itemCount: _medicamentosFiltro.length,
       itemBuilder: (BuildContext context, int index) {
         final medicamento = _medicamentosFiltro[index];
-        return ListTile(
-          leading: const Icon(Icons.medication),
-          title: Text(medicamento),
-          subtitle: Text('Próxima dosis en ${index + 1} hora(s)'),
-          trailing: const Icon(Icons.arrow_forward_ios),
-          onTap: () {
-            print('Tap en $medicamento');
-            // Navegar hacia la página de detalles
-            // Navigator.push(context, MaterialPageRoute(builder: (context) => DetailScreen(item: item)));
-          },
+        return Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          elevation: 3,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          child: ListTile(
+            leading: const Icon(Icons.medication, color: Colors.blueAccent),
+            title: Text(
+              medicamento.nombre,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            subtitle: Text(
+              'Cantidad: ${medicamento.cantidad} | Cada ${medicamento.cadaCuantoHoras}h | Inicio: ${medicamento.horaInicio.format(context)} | Fecha: ${medicamento.fechaInicio.day}/${medicamento.fechaInicio.month}/${medicamento.fechaInicio.year}',
+              style: TextStyle(color: Colors.grey[600]),
+            ),
+            trailing: const Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.grey,
+            ),
+            onTap: () {
+              print('Tap en ${medicamento.nombre}');
+            },
+          ),
         );
       },
     );

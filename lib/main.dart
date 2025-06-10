@@ -10,7 +10,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: AppTheme(selectColor: 6).theme(),
+      theme: AppTheme(selectColor: 0).theme(),
       title: 'RecuerdaMed',
       debugShowCheckedModeBanner: true,
       home: NavigationBarApp(),
