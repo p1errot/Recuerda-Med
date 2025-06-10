@@ -131,7 +131,6 @@ class TextoA extends StatelessWidget {
       color: Colors.transparent,
       child: SizedBox(
         width: size.width * width,
-        // Ancho específico para este Text
         child: Text(
           text,
           style: style,
