@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recuerdamed/config/theme/app_theme.dart';
-import 'package:recuerdamed/presentation/widgets/navigationbar/navigationbar.dart';
-
+import 'package:recuerdamed/presentation/Screens/login/login_screen.dart';
 void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
@@ -12,8 +11,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       theme: AppTheme(selectColor: 0).theme(),
       title: 'RecuerdaMed',
-      debugShowCheckedModeBanner: true,
-      home: NavigationBarApp(),
+      debugShowCheckedModeBanner: false,
+      home: SignInScreen(),
     );
   }
 }

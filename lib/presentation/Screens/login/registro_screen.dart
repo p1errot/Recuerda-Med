@@ -5,20 +5,32 @@ class SignUpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+          color: colors.primary,
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
-              const Center(
+              const SizedBox(height: 20),
+              Center(
                 child: Text(
                   'RecuerdaMed',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
+                    color: colors.primary,
                   ),
                 ),
               ),
@@ -29,7 +41,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               const Text(
-                'Ingresa los datos solicitados para registrar',
+                'Ingresa tus datos para registrarte.',
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14, color: Colors.black54),
               ),
@@ -50,7 +62,7 @@ class SignUpScreen extends StatelessWidget {
               TextField(
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  hintText: 'email@domain.com',
+                  hintText: 'email@dominio.com',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -94,7 +106,8 @@ class SignUpScreen extends StatelessWidget {
                 height: 48,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black,
+                    backgroundColor: colors.primary,
+                    foregroundColor: colors.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -106,10 +119,12 @@ class SignUpScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Al hacer clic en continuar, aceptas nuestros Términos de servicio y Política de privacidad.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Colors.black54),
+              Text(
+                'Al hacer clic en registrar, aceptas nuestros Términos de servicio y Política de privacidad.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colors.onSurface.withOpacity(0.6),
+                ),
               ),
             ],
           ),
