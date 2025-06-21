@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recuerdamed/presentation/Screens/perfil/editar_perfil_screen.dart';
+import 'package:recuerdamed/presentation/Screens/login/login_screen.dart';
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
@@ -103,6 +104,28 @@ class PerfilScreen extends StatelessWidget {
                 TextoA(text: "Paracetamol:", width: 0.35),
                 TextoA(text: "1 mes", width: 0.5, aling: 1),
               ],
+            ),
+
+            const SizedBox(height: 40),
+
+            ElevatedButton.icon(
+              icon: const Icon(Icons.logout),
+              label: const Text('Cerrar sesión'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(200, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () {
+                // Navega a la página de login y remueve todas las rutas
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => const SignInScreen()),
+                  (route) => false, // Remueve todas las rutas
+                );
+              },
             ),
           ],
         ),
