@@ -1,7 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:recuerdamed/data/database/database_helper.dart';
+import 'package:recuerdamed/utils/password_util.dart';
 
-class SignUpScreen extends StatelessWidget {
+class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
+
+  @override
+  State<SignUpScreen> createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUpScreen> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
+  bool isValidEmail(String email) {
+    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+  }
+
+  Map<String, String?> validateFields() {
+    final errors = <String, String?>{};
+
+    if (_usernameController.text.trim().length < 3) {
+      errors['username'] = 'El usuario debe tener al menos 3 caracteres';
+    }
+
+    if (!isValidEmail(_emailController.text.trim())) {
+      errors['email'] = 'Ingrese un correo electrónico válido';
+    }
+
+    if (_passwordController.text.isEmpty) {
+      errors['password'] = 'La contraseña es obligatoria';
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      errors['confirmPassword'] = 'Las contraseñas no coinciden';
+    }
+
+    return errors;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +86,9 @@ class SignUpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               TextField(
+                controller: _usernameController,
                 decoration: InputDecoration(
-                  hintText: 'usuario',
+                  hintText: 'Usuario',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -60,6 +100,7 @@ class SignUpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'email@dominio.com',
@@ -74,9 +115,10 @@ class SignUpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: _passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  hintText: 'contraseña',
+                  hintText: 'Contraseña',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -88,9 +130,10 @@ class SignUpScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextField(
+                controller: _confirmPasswordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  hintText: 'confirma contraseña',
+                  hintText: 'Confirma contraseña',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -113,7 +156,34 @@ class SignUpScreen extends StatelessWidget {
                     ),
                   ),
                   onPressed: () {
-                    // Acción al registrar
+                    // Store context before async operation
+                    final scaffoldContext = context;
+
+                    // Validate fields
+                    final errors = validateFields();
+
+                    if (errors.isNotEmpty) {
+                      // Show the first error message
+                      String errorMessage =
+                          errors.values.first ??
+                          'Por favor verifica los campos';
+                      ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                        SnackBar(
+                          content: Text(errorMessage),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    showDialog(
+                      context: scaffoldContext,
+                      barrierDismissible: false,
+                      builder: (context) =>
+                          const Center(child: CircularProgressIndicator()),
+                    );
+
+                    _registerUser();
                   },
                   child: const Text('Registrar'),
                 ),
@@ -131,5 +201,51 @@ class SignUpScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _registerUser() async {
+    final scaffoldContext = context;
+
+    try {
+      final dbHelper = DatabaseHelper();
+
+      final userData = {
+        'username': _usernameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'password': PasswordUtil.hashPassword(_passwordController.text),
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      await dbHelper.insert('users', userData);
+
+      if (!mounted) return;
+
+      Navigator.pop(scaffoldContext);
+
+      ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+        const SnackBar(
+          content: Text('¡Usuario registrado con éxito!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          Navigator.pop(scaffoldContext);
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      Navigator.pop(scaffoldContext);
+
+      ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
