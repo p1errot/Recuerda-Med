@@ -3,17 +3,22 @@ import 'package:recuerdamed/presentation/Screens/login/recuperar_constrasena_scr
 import 'package:recuerdamed/presentation/Screens/login/registro_screen.dart';
 import 'package:recuerdamed/presentation/widgets/navigationbar/navigationbar.dart';
 import 'package:recuerdamed/data/database/database_helper.dart';
+import 'package:recuerdamed/utils/password_util.dart';
 
-// Function to validate if user exists in the database
-Future<bool> validateUser(String email, String password) async {
+Future<bool> validateUser(String username, String password) async {
+  final hashedPassword = PasswordUtil.hashPassword(password);
+
   final dbHelper = DatabaseHelper();
   final result = await dbHelper.query(
     'users',
     where: '(email = ? OR username = ?) AND password = ?',
-    whereArgs: [email, password],
+    whereArgs: [
+      username,
+      username,
+      hashedPassword,
+    ], // Se usa username para el usuario y el email
   );
 
-  // If the query returns any results, the user exists
   return result.isNotEmpty;
 }
 
