@@ -2,10 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:recuerdamed/presentation/Screens/login/recuperar_constrasena_screen.dart';
 import 'package:recuerdamed/presentation/Screens/login/registro_screen.dart';
 import 'package:recuerdamed/presentation/widgets/navigationbar/navigationbar.dart';
+import 'package:recuerdamed/data/database/database_helper.dart';
 
-class SignInScreen extends StatelessWidget {
+// Function to validate if user exists in the database
+Future<bool> validateUser(String email, String password) async {
+  final dbHelper = DatabaseHelper();
+  final result = await dbHelper.query(
+    'users',
+    where: '(email = ? OR username = ?) AND password = ?',
+    whereArgs: [email, password],
+  );
+
+  // If the query returns any results, the user exists
+  return result.isNotEmpty;
+}
+
+class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -44,10 +63,10 @@ class SignInScreen extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               TextField(
-                controller: emailController, 
+                controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
-                  hintText: 'email@dominio.com',
+                  hintText: 'Usuario o email',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -59,10 +78,10 @@ class SignInScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: passwordController, 
+                controller: passwordController,
                 obscureText: true,
                 decoration: InputDecoration(
-                  hintText: 'contraseña',
+                  hintText: 'Contraseña',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
@@ -84,23 +103,58 @@ class SignInScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: () {
-                   
-                    if (emailController.text == 'admin' &&
-                        passwordController.text == '1234') {
-                      Navigator.pushReplacement(
-                       
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const NavigationBarApp(),
-                        ),
+                  onPressed: () async {
+                    // Store context before async operation
+                    final scaffoldContext = context;
+
+                    // Show loading indicator
+                    showDialog(
+                      context: scaffoldContext,
+                      barrierDismissible: false,
+                      builder: (context) =>
+                          const Center(child: CircularProgressIndicator()),
+                    );
+
+                    try {
+                      // Use the validateUser function to check credentials
+                      final isValidUser = await validateUser(
+                        emailController.text,
+                        passwordController.text,
                       );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Credenciales incorrectas. Intenta con admin/1234.',
+
+                      // Check if the widget is still in the tree
+                      if (!mounted) return;
+
+                      // Close the loading dialog
+                      Navigator.pop(scaffoldContext);
+
+                      if (isValidUser) {
+                        // Navigate to home screen
+                        Navigator.pushReplacement(
+                          scaffoldContext,
+                          MaterialPageRoute(
+                            builder: (context) => const NavigationBarApp(),
                           ),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'Credenciales incorrectas. Por favor, inténtalo de nuevo.',
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    } catch (e) {
+                      // Check if the widget is still in the tree
+                      if (!mounted) return;
+
+                      // Close the loading dialog and show error
+                      Navigator.pop(scaffoldContext);
+                      ScaffoldMessenger.of(scaffoldContext).showSnackBar(
+                        SnackBar(
+                          content: Text('Error: ${e.toString()}'),
                           backgroundColor: Colors.red,
                         ),
                       );
