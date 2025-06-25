@@ -34,7 +34,6 @@ class _NavigationExampleState extends State<NavigationExample> {
     _loadMedicamentos();
   }
 
-  // Load medications from the database
   Future<void> _loadMedicamentos() async {
     try {
       setState(() {
@@ -43,7 +42,6 @@ class _NavigationExampleState extends State<NavigationExample> {
 
       final userId = await UserSession().userId;
       if (userId == null) {
-        // User not logged in, show empty list
         setState(() {
           _medicamentos = [];
           _isLoading = false;
@@ -81,16 +79,12 @@ class _NavigationExampleState extends State<NavigationExample> {
     }
   }
 
-  // Refresh medications list - now we just reload from database instead of adding manually
   void _refreshMedicamentos() {
     _loadMedicamentos();
   }
 
-  void _onSearchQueryChanged(String query) {
-    // Implement search functionality here
-  }
+  void _onSearchQueryChanged(String query) {}
 
-  // Adapter function to match the expected signature
   void _handleMedicamentoAdded(Medicamento medicamento) {
     _refreshMedicamentos();
   }

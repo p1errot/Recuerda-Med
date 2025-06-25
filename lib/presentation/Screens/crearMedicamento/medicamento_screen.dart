@@ -285,20 +285,16 @@ Future<bool> obtenerDatosMedicamento(
                       cada != null &&
                       horaInicioPicked != null &&
                       fechaInicioPicked != null) {
-                    // Format time to HH:MM string
                     final formattedTime =
                         '${horaInicioPicked!.hour.toString().padLeft(2, '0')}:${horaInicioPicked!.minute.toString().padLeft(2, '0')}';
 
-                    // Format date to YYYY-MM-DD string
                     final formattedDate = fechaInicioPicked!
                         .toIso8601String()
                         .split('T')[0];
 
-                    // Get the current user ID
                     final userId = await UserSession().userId;
 
                     if (userId != null) {
-                      // Create medication data for database
                       final medicamentoData = {
                         'user_id': userId,
                         'name': nombre,
@@ -306,10 +302,9 @@ Future<bool> obtenerDatosMedicamento(
                         'every_hours': cada,
                         'start_time': formattedTime,
                         'start_date': formattedDate,
-                        // 'end_date': null, // Optional end date
+                        // 'end_date': null,
                       };
 
-                      // Save to database
                       final dbHelper = DatabaseHelper();
                       final insertId = await dbHelper.insert(
                         'medicines',
@@ -317,23 +312,21 @@ Future<bool> obtenerDatosMedicamento(
                       );
 
                       if (insertId > 0) {
-                        // First close dialog, then show success message
                         Navigator.of(dialogContext).pop(true);
-                        
-                        // Only show SnackBar if the original context is still mounted
+
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Medicamento guardado correctamente'),
+                              content: Text(
+                                'Medicamento guardado correctamente',
+                              ),
                               backgroundColor: Colors.green,
                             ),
                           );
                         }
                       } else {
-                        // First close dialog with false result, then show error message
                         Navigator.of(dialogContext).pop(false);
-                        
-                        // Only show SnackBar if the original context is still mounted
+
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -344,10 +337,8 @@ Future<bool> obtenerDatosMedicamento(
                         }
                       }
                     } else {
-                      // First close dialog with false result, then show error message
                       Navigator.of(dialogContext).pop(false);
-                      
-                      // Only show SnackBar if the original context is still mounted
+
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
@@ -358,7 +349,6 @@ Future<bool> obtenerDatosMedicamento(
                       }
                     }
                   } else {
-                    // For validation errors, DON'T close dialog, just show error
                     ScaffoldMessenger.of(dialogContext).showSnackBar(
                       const SnackBar(
                         content: Text('Por favor complete todos los campos'),
