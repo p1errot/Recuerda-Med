@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-
 import 'package:recuerdamed/presentation/Screens/crearMedicamento/medicamento_screen.dart';
 
 class InicioScreen extends StatefulWidget {
@@ -48,50 +46,18 @@ class _InicioScreenState extends State<InicioScreen> {
     super.dispose();
   }
 
-  void _mostrarSnackBar(String mensaje, {bool exito = true}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensaje),
-        backgroundColor: exito ? Colors.green : Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
   Future<void> _addMedicamento() async {
-    final medicamentoMap = await obtenerDatosMedicamento(context);
+    final success = await obtenerDatosMedicamento(context);
 
-    if (medicamentoMap != null) {
-      final newNombre = medicamentoMap["nombre"] as String;
-      final newCantidad = medicamentoMap["cantidad"] as int;
-      final newCadaCuantoHoras = medicamentoMap["cada_cuanto_horas"] as int;
-      final newHoraInicio = medicamentoMap["hora_inicio"] as TimeOfDay;
-      final newFechaInicio = DateTime.parse(
-        medicamentoMap["fecha_inicio"] as String,
+    if (success) {
+      final dummyMedicamento = Medicamento(
+        nombre: '',
+        cantidad: 0,
+        cadaCuantoHoras: 0,
+        horaInicio: const TimeOfDay(hour: 0, minute: 0),
+        fechaInicio: DateTime.now(),
       );
-
-      final nuevoMedicamento = Medicamento(
-        nombre: newNombre,
-        cantidad: newCantidad,
-        cadaCuantoHoras: newCadaCuantoHoras,
-        horaInicio: newHoraInicio,
-        fechaInicio: newFechaInicio,
-      );
-
-      widget.onMedicamentoAdded(nuevoMedicamento);
-
-      _mostrarSnackBar(
-        'Medicamento "${nuevoMedicamento.nombre}" añadido correctamente.',
-      );
-      print(
-        'Medicamento añadido (JSON): ${jsonEncode(nuevoMedicamento.toJson())}',
-      );
-    } else {
-      _mostrarSnackBar(
-        'Registro de medicamento cancelado o incompleto.',
-        exito: false,
-      );
+      widget.onMedicamentoAdded(dummyMedicamento);
     }
   }
 

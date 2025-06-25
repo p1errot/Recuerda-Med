@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:recuerdamed/data/database/database_helper.dart';
+import 'package:recuerdamed/utils/user_session.dart';
 
 class Medicamento {
   final String nombre;
@@ -140,7 +142,7 @@ class Medicamento {
   }
 }
 
-Future<Map<String, dynamic>?> obtenerDatosMedicamento(
+Future<bool> obtenerDatosMedicamento(
   BuildContext context, {
   Medicamento? medicamentoExistente,
 }) async {
@@ -154,15 +156,14 @@ Future<Map<String, dynamic>?> obtenerDatosMedicamento(
     text: medicamentoExistente?.cadaCuantoHoras.toString(),
   );
 
-  TimeOfDay? horaInicioPicked =
-      medicamentoExistente?.horaInicio;
+  TimeOfDay? horaInicioPicked = medicamentoExistente?.horaInicio;
   String currentHoraSeleccionada = medicamentoExistente != null
       ? '${medicamentoExistente.horaInicio.hour.toString().padLeft(2, '0')}:${medicamentoExistente.horaInicio.minute.toString().padLeft(2, '0')}'
       : '00:00';
 
   DateTime? fechaInicioPicked = medicamentoExistente?.fechaInicio;
 
-  final Map<String, dynamic>? result = await showDialog<Map<String, dynamic>>(
+  final bool? result = await showDialog<bool>(
     context: context,
     builder: (dialogContext) {
       return StatefulBuilder(
@@ -274,7 +275,7 @@ Future<Map<String, dynamic>?> obtenerDatosMedicamento(
                 child: const Text('Cancelar'),
               ),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   final nombre = nombreCtrl.text.trim();
                   final cantidad = int.tryParse(cantidadCtrl.text);
                   final cada = int.tryParse(cadaCuantoCtrl.text);
@@ -284,18 +285,86 @@ Future<Map<String, dynamic>?> obtenerDatosMedicamento(
                       cada != null &&
                       horaInicioPicked != null &&
                       fechaInicioPicked != null) {
-                    final medicamentoData = {
-                      "nombre": nombre,
-                      "cantidad": cantidad,
-                      "cada_cuanto_horas": cada,
-                      "hora_inicio": horaInicioPicked,
-                      "fecha_inicio": fechaInicioPicked!
-                          .toIso8601String()
-                          .split('T')[0],
-                    };
-                    Navigator.pop(dialogContext, medicamentoData);
+                    // Format time to HH:MM string
+                    final formattedTime =
+                        '${horaInicioPicked!.hour.toString().padLeft(2, '0')}:${horaInicioPicked!.minute.toString().padLeft(2, '0')}';
+
+                    // Format date to YYYY-MM-DD string
+                    final formattedDate = fechaInicioPicked!
+                        .toIso8601String()
+                        .split('T')[0];
+
+                    // Get the current user ID
+                    final userId = await UserSession().userId;
+
+                    if (userId != null) {
+                      // Create medication data for database
+                      final medicamentoData = {
+                        'user_id': userId,
+                        'name': nombre,
+                        'quantity': cantidad,
+                        'every_hours': cada,
+                        'start_time': formattedTime,
+                        'start_date': formattedDate,
+                        // 'end_date': null, // Optional end date
+                      };
+
+                      // Save to database
+                      final dbHelper = DatabaseHelper();
+                      final insertId = await dbHelper.insert(
+                        'medicines',
+                        medicamentoData,
+                      );
+
+                      if (insertId > 0) {
+                        // First close dialog, then show success message
+                        Navigator.of(dialogContext).pop(true);
+                        
+                        // Only show SnackBar if the original context is still mounted
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Medicamento guardado correctamente'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } else {
+                        // First close dialog with false result, then show error message
+                        Navigator.of(dialogContext).pop(false);
+                        
+                        // Only show SnackBar if the original context is still mounted
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Error al guardar el medicamento'),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    } else {
+                      // First close dialog with false result, then show error message
+                      Navigator.of(dialogContext).pop(false);
+                      
+                      // Only show SnackBar if the original context is still mounted
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Error: Usuario no identificado'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
                   } else {
-                    Navigator.pop(dialogContext);
+                    // For validation errors, DON'T close dialog, just show error
+                    ScaffoldMessenger.of(dialogContext).showSnackBar(
+                      const SnackBar(
+                        content: Text('Por favor complete todos los campos'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
                   }
                 },
                 child: const Text('Guardar'),
@@ -307,5 +376,5 @@ Future<Map<String, dynamic>?> obtenerDatosMedicamento(
     },
   );
 
-  return result;
+  return result == true;
 }
