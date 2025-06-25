@@ -4,6 +4,7 @@ import 'package:recuerdamed/presentation/Screens/login/registro_screen.dart';
 import 'package:recuerdamed/presentation/widgets/navigationbar/navigationbar.dart';
 import 'package:recuerdamed/data/database/database_helper.dart';
 import 'package:recuerdamed/utils/password_util.dart';
+import 'package:recuerdamed/utils/user_session.dart';
 
 Future<bool> validateUser(String username, String password) async {
   final hashedPassword = PasswordUtil.hashPassword(password);
@@ -19,7 +20,17 @@ Future<bool> validateUser(String username, String password) async {
     ], // Se usa username para el usuario y el email
   );
 
-  return result.isNotEmpty;
+  if (result.isNotEmpty) {
+    final userData = result.first;
+    await UserSession().saveUserSession(
+      userData['id'] as int,
+      userData['username'] as String,
+      userData['email'] as String,
+    );
+    return true;
+  }
+
+  return false;
 }
 
 class SignInScreen extends StatefulWidget {
