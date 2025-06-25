@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:recuerdamed/data/database/database_helper.dart';
 import 'package:recuerdamed/presentation/Screens/crearMedicamento/medicamento_screen.dart';
+import 'package:recuerdamed/utils/user_session.dart';
 
 class InicioScreen extends StatefulWidget {
   final List<Medicamento> medicamentos;
@@ -44,6 +46,84 @@ class _InicioScreenState extends State<InicioScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _confirmarEliminarMedicamento(
+    BuildContext context,
+    Medicamento medicamento,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Eliminar medicamento'),
+        content: Text(
+          '¿Está seguro que desea eliminar el medicamento "${medicamento.nombre}"?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await _eliminarMedicamento(medicamento);
+    }
+  }
+
+  Future<void> _eliminarMedicamento(Medicamento medicamento) async {
+    try {
+      final userId = await UserSession().userId;
+      if (userId == null) {
+        if (!mounted) return;
+        _mostrarMensaje('Error: Usuario no identificado', esError: true);
+        return;
+      }
+
+      final dbHelper = DatabaseHelper();
+
+      final formattedTime =
+          '${medicamento.horaInicio.hour.toString().padLeft(2, '0')}:${medicamento.horaInicio.minute.toString().padLeft(2, '0')}';
+
+      final formattedDate = medicamento.fechaInicio.toIso8601String().split(
+        'T',
+      )[0];
+      final result = await dbHelper.delete(
+        'medicines',
+        where: 'user_id = ? AND name = ? AND start_time = ? AND start_date = ?',
+        whereArgs: [userId, medicamento.nombre, formattedTime, formattedDate],
+      );
+
+      if (result > 0) {
+        if (!mounted) return;
+        widget.onMedicamentoAdded(medicamento);
+        _mostrarMensaje('Medicamento eliminado correctamente');
+      } else {
+        if (!mounted) return;
+        _mostrarMensaje('No se pudo eliminar el medicamento', esError: true);
+      }
+    } catch (e) {
+      print('Error al eliminar medicamento: $e');
+      if (!mounted) return;
+      _mostrarMensaje('Error al eliminar medicamento', esError: true);
+    }
+  }
+
+  void _mostrarMensaje(String mensaje, {bool esError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(mensaje),
+        backgroundColor: esError ? Colors.red : Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   Future<void> _addMedicamento() async {
@@ -165,10 +245,10 @@ class _InicioScreenState extends State<InicioScreen> {
               'Cantidad: ${medicamento.cantidad} | Cada ${medicamento.cadaCuantoHoras}h | Inicio: ${medicamento.horaInicio.format(context)} | Fecha: ${medicamento.fechaInicio.day}/${medicamento.fechaInicio.month}/${medicamento.fechaInicio.year}',
               style: TextStyle(color: Colors.grey[600]),
             ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Colors.grey,
+            trailing: IconButton(
+              icon: const Icon(Icons.delete, color: Colors.grey),
+              onPressed: () =>
+                  _confirmarEliminarMedicamento(context, medicamento),
             ),
             onTap: () {
               print('Tap en ${medicamento.nombre}');

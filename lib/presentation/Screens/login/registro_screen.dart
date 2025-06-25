@@ -156,14 +156,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                   ),
                   onPressed: () {
-                    // Store context before async operation
                     final scaffoldContext = context;
 
-                    // Validate fields
                     final errors = validateFields();
 
                     if (errors.isNotEmpty) {
-                      // Show the first error message
                       String errorMessage =
                           errors.values.first ??
                           'Por favor verifica los campos';

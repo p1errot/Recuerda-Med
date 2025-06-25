@@ -120,10 +120,8 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                   ),
                   onPressed: () async {
-                    // Store context before async operation
                     final scaffoldContext = context;
 
-                    // Show loading indicator
                     showDialog(
                       context: scaffoldContext,
                       barrierDismissible: false,
@@ -132,20 +130,15 @@ class _SignInScreenState extends State<SignInScreen> {
                     );
 
                     try {
-                      // Use the validateUser function to check credentials
                       final isValidUser = await validateUser(
                         emailController.text,
                         passwordController.text,
                       );
-
-                      // Check if the widget is still in the tree
                       if (!mounted) return;
 
-                      // Close the loading dialog
                       Navigator.pop(scaffoldContext);
 
                       if (isValidUser) {
-                        // Navigate to home screen
                         Navigator.pushReplacement(
                           scaffoldContext,
                           MaterialPageRoute(
@@ -163,10 +156,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         );
                       }
                     } catch (e) {
-                      // Check if the widget is still in the tree
                       if (!mounted) return;
 
-                      // Close the loading dialog and show error
                       Navigator.pop(scaffoldContext);
                       ScaffoldMessenger.of(scaffoldContext).showSnackBar(
                         SnackBar(
