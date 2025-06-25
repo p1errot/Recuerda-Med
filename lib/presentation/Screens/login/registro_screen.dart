@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:recuerdamed/data/database/database_helper.dart';
+import 'package:recuerdamed/presentation/Screens/login/login_screen.dart';
 import 'package:recuerdamed/utils/password_util.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -227,11 +228,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
         ),
       );
 
-      Future.delayed(const Duration(seconds: 2), () {
-        if (mounted) {
-          Navigator.pop(scaffoldContext);
-        }
-      });
+      if (mounted) {
+        Navigator.of(scaffoldContext).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const SignInScreen()),
+          (route) => false, // Remove all previous routes
+        );
+      }
     } catch (e) {
       if (!mounted) return;
 
